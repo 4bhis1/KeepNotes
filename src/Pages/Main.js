@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import Cards from "../Components/Cards";
+import Input from "../Components/Input";
 import Nav from "./Nav";
 
 const Main = () => {
@@ -7,14 +8,15 @@ const Main = () => {
     { done: false, text: "Abhishek" },
     { done: true, text: "Ankit" },
   ];
+
+
   return (
     <>
-      <Nav />
-      <div>
-        <input type={"text"} />
-        Checkbox
-      </div>
-      <div style={{ display: "flex" }}>
+      {/* <Nav /> */}
+
+      <Input />
+    
+      {/* <div style={{ display: "flex" }}>
         <Cards
           title="something to add"
           color={"#c0c0c0"}
@@ -29,7 +31,7 @@ const Main = () => {
           list={list}
           note={"hmmm ye bhi ho jayega"}
         />
-      </div>
+      </div> */}
     </>
   );
 };
