@@ -1,21 +1,24 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import Cards from "../Components/Cards";
 import Input from "../Components/Input";
+import { Theme } from "../Context/Provider";
+import { data } from "../Data/data";
+import { ColorForCards, RandomColor } from "../Theme/Cards/ColorForCards";
 import Nav from "./Nav";
 
 const Main = () => {
-  let list = [
-    { done: false, text: "Abhishek" },
-    { done: true, text: "Ankit" },
-  ];
+
+  let {themeMode, changeTheme, colorFunction, view , changeView} = useContext(Theme)
 
 
   return (
     <>
-      {/* <Nav /> */}
+      <Nav />
 
-      <Input />
-    
+      <Input data={data} />
+
+      {/* <Demo /> */}
+
       {/* <div style={{ display: "flex" }}>
         <Cards
           title="something to add"

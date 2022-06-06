@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 
-const Input = () => {
+import {BsCheck2Square} from "react-icons/bs"
+
+const Input = ({data}) => {
+
   let [showListNote, updateShowListNote] = useState({
     list: false,
     note: false,
@@ -28,18 +31,31 @@ const Input = () => {
   };
 
   useEffect(()=>{
+    if(!textInNote.firstInputFocus && !textInNote.secondInputFocus){
+      console.log("tirggered",textInNote.firstInputFocus,textInNote.secondInputFocus)
 
-  },[])
+      if (textInNote.firstInputText || textInNote.secondInputText){
+      data.push({
+        title : textInNote.firstInputText,
+        pinned : false,
+        color : "#c0c0c0",
+        backgroundImage : "",
+        note : true,
+        isList : false,
+        list : [ {done : "" , text : ""}]
+      })
+    }
+      textInNote.firstInputText=""
+      textInNote.secondInputText=""
+      updateShowListNote({list : false, note : false})
 
-  console.log(
-    // "--<><><>",
-    // showListNote,
-    // "text in list",
-    // textInList,
-    // refObject,
-    "text in note",
-    textInNote
-  );
+      console.log(
+        data
+      );
+    
+    }
+  },[textInNote.firstInputFocus,textInNote.secondInputFocus])
+
 
   return (
     <div>
@@ -48,7 +64,8 @@ const Input = () => {
           <div>List here</div>
         ) : (
           // Note here
-          <div style={{ flexDirection: "column", display: "flex" }}>
+          <div style={{  display: "flex", backgroundColor : 'aqua', justifyContent: 'center'}}>
+            <div style={{ width : 800 , display : 'flex', flexDirection: "column", alignItems : 'center', backgroundColor : 'lime'}}>
             <input
               type={"text"}
               placeholder={"title"}
@@ -67,10 +84,11 @@ const Input = () => {
                   firstInputText: e.target.value,
                 });
               }}
+              style={{width : 700}}
             />
             <textarea
               placeholder="body..."
-              ref={refObject.firstInputInNote}
+              ref={refObject.secondInputInNote}
               onFocus={() => {
                 updateTextInNote({ ...textInNote, secondInputFocus: true });
               }}
@@ -83,105 +101,40 @@ const Input = () => {
                   secondInputText: e.target.value,
                 });
               }}
+              style={{width:700}}
             />
+            
+            </div>
           </div>
         )
       ) : (
-        <div style={{ display: "flex" }}>
+        <div style={{ display: "flex", alignItems : 'center', justifyContent : 'center', backgroundColor : 'blue',  }}>
+          <div style={{width : 800, backgroundColor : 'white', display :'flex', justifyContent : 'center'}}>
           <input
             onClick={() => {
               updateShowListNote({ ...showListNote, note: true });
+              // console.log("---<><><>",refObject.secondInputInNote)
+              // refObject.secondInputInNote.current.focus()
+              
             }}
             value={"Take a note..."}
+            onFocus={()=>{
+              console.log("FOcused")
+            }}
           />
           <div
             onClick={() => {
               updateShowListNote({ list: true, note: true });
             }}
+            style={{fontSize : 24, paddingLeft : 10}}
           >
-            Checkbox
+            < BsCheck2Square />
+          </div>
           </div>
         </div>
       )}
     </div>
   );
-
-  //   let [show, updateShow] = useState(false);
-  //   let [showList, updateShowList] = useState(false);
-
-  //   let [inputInListText, updateInputInListText] = useState("");
-  //   let [inputInNoteText, updateInputInNoteText] = useState("");
-
-  //   let inputInListRef = useRef(null);
-
-  //   useEffect(() => {
-  //     if (showList) {
-  //       console.log(inputInListRef.current.isF);
-  //       inputInListRef.current.focus();
-  //     }
-  //   }, [showList]);
-
-  //   //   console.log("--<><><><><", show, showList);
-  //   return (
-  //     <div>
-  //       {show ? (
-  //         showList ? (
-  //           <div>
-  //             <input
-  //               type={"text"}
-  //               ref={inputInListRef}
-  //               onBlur={() => {
-  //                 updateShow(false);
-  //                 updateShowList(false);
-  //               }}
-  //               value={inputInListText}
-  //               onChange={(e) => {
-  //                 updateInputInListText(e.target.value);
-  //               }}
-  //             />
-  //             <div>Code for showing extra Checkbox</div>
-  //           </div>
-  //         ) : (
-  //           <div style={{ flexDirection: "column", display: "flex" }}>
-  //   <input
-  //     type={"text"}
-  //     ref={inputInListRef}
-  //     onBlur={() => {
-  //       updateShow(false);
-  //       updateShowList(false);
-  //     }}
-  //     value={inputInNoteText}
-  //     onChange={(e) => {
-  //       updateInputInNoteText(e.target.value);
-  //     }}
-  //   />
-  //   <textarea />
-  //           </div>
-  //         )
-  //       ) : (
-  //         <div style={{ display: "flex" }}>
-  //           <input
-  //             type={"text"}
-  //             onFocus={() => {
-  //               updateShow(true);
-  //             }}
-  //             onBlur={() => {
-  //               updateShow(false);
-  //             }}
-  //             value="Take a note..."
-  //           />
-  //           <div
-  //             onClick={() => {
-  //               updateShowList(true);
-  //               updateShow(true);
-  //             }}
-  //           >
-  //             List
-  //           </div>
-  //         </div>
-  //       )}
-  //     </div>
-  //   );
 };
 
 export default Input;
