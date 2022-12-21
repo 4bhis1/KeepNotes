@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-
+import RCE from "./ReachCodeEditor";
 const Input = () => {
   let [showListNote, updateShowListNote] = useState({
     list: false,
@@ -27,9 +27,7 @@ const Input = () => {
     secondInputInList: useRef(null),
   };
 
-  useEffect(()=>{
-
-  },[])
+  useEffect(() => {}, []);
 
   console.log(
     // "--<><><>",
@@ -68,22 +66,7 @@ const Input = () => {
                 });
               }}
             />
-            <textarea
-              placeholder="body..."
-              ref={refObject.firstInputInNote}
-              onFocus={() => {
-                updateTextInNote({ ...textInNote, secondInputFocus: true });
-              }}
-              onBlur={() => {
-                updateTextInNote({ ...textInNote, secondInputFocus: false });
-              }}
-              onChange={(e) => {
-                updateTextInNote({
-                  ...textInNote,
-                  secondInputText: e.target.value,
-                });
-              }}
-            />
+            <RCE />
           </div>
         )
       ) : (

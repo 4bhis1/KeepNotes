@@ -4,7 +4,10 @@ import "./Cards.css";
 const Cards = ({ title, color, backgroundImage, note, isList, list }) => {
   console.log(list);
   return (
-    <div style={{ backgroundColor: color }} className="cards">
+    <div
+      style={{ backgroundColor: color, cursor: "pointer" }}
+      className="cards"
+    >
       <h1>{title}</h1>
 
       {isList ? (
