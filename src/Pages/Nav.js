@@ -1,6 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 
 const Nav = () => {
+
+  let [view,updateView] = useState('row')
+
   return (
     <>
       <div
@@ -22,7 +25,10 @@ const Nav = () => {
         </div>
         <div style={{ display: "flex", justifyContent: "space-between" }}>
           <div>Theme Toggler</div>
-          <div>List View</div>
+          <div onClick={()=>{
+            if (view === 'row') updateView('col')
+            else updateView('row')
+          }}>List View</div>
         </div>
       </div>
     </>

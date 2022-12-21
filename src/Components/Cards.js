@@ -2,7 +2,7 @@ import React from "react";
 import "./Cards.css";
 
 const Cards = ({ title, color, backgroundImage, note, isList, list }) => {
-  console.log(list);
+  console.log("in cards",list);
   return (
     <div
       style={{ backgroundColor: color, cursor: "pointer" }}

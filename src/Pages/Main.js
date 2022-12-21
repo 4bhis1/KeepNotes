@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import Cards from "../Components/Cards";
 import Displayer from "../Components/Displayer";
 import Input from "../Components/Input";
@@ -36,13 +36,14 @@ const Main = () => {
     { done: true, text: "Ankit" },
   ];
 
+
   return (
     <>
-      {/* <Displayer /> */}
-      {/* <RecordAudio /> */}
+      <Displayer />
+      <RecordAudio />
       <Nav />
       <Input />
-      {/* <RCE /> */}
+      <RCE />
 
       {/* <div style={{ display: "flex" }}>
          <Cards
