@@ -13,16 +13,40 @@ import {
 } from "react-icons/ri";
 
 import { MdDelete } from "react-icons/md";
+import moment from "moment";
 
-const RCE = () => {
-  const type = ["do", "doing", "done", "txt", "bld", "mic", "img"];
+// let pageId = "63ae9bbd38508e1ac5f4211e";
+
+const RCE = ({ pageId, pageNote }) => {
+  const types = ["do", "doing", "done", "txt", "bld", "mic", "img"];
+
   const [cursorAtIndex, updateCursorAtIndex] = useState(0);
-
-  let [text, updateText] = useState([{ type: type[3], data: "" }]);
+  const [setIntervalRef, updateSetIntervalRef] = useState();
+  let [text, updateText] = useState([{ types: types[3], data: "" }]);
   let [todoCompleteWidth, updateTodoCompleteWidth] = useState({
     doing: 0,
     done: 0,
   });
+
+  const fetchData = async () => {
+    const temp = await fetch("http://localhost:5010/cn/getPage", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        pageId,
+      }),
+    });
+    const temp2 = await temp.json();
+    console.log(">>>> temp2", temp2["result"]);
+    updateText(temp2["result"]);
+  };
+
+  useEffect(() => {
+    fetchData();
+  },[]);
 
   useEffect(() => {
     reference.current.focus();
@@ -32,9 +56,9 @@ const RCE = () => {
       doing = 0,
       done = 0;
     for (let i of text) {
-      if (i["type"] === type[0]) do1++;
-      else if (i["type"] === type[1]) doing++;
-      else if (i["type"] === type[2]) done++;
+      if (i["types"] === types[0]) do1++;
+      else if (i["types"] === types[1]) doing++;
+      else if (i["types"] === types[2]) done++;
     }
     if (do1 || doing || done)
       updateTodoCompleteWidth({
@@ -51,10 +75,52 @@ const RCE = () => {
     reference.current.style.height = scrollHeight + "px";
   }, [text]);
 
+  let pingServerAfter30Sec = () => {
+    console.log("Ping");
+
+    return setInterval(async () => {
+      let data;
+
+      updateText((tempdata) => {
+        data = tempdata;
+        return tempdata;
+      });
+
+      const temp = await fetch("http://localhost:5010/cn/notes", {
+        method: "PATCH",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          pageId,
+          note: data,
+          heading: "Nice todo",
+          pinned: false,
+          background: "blue",
+          updatedon: moment().format("MM/DD/YYYY HH:mm:ss"),
+        }),
+      });
+      const temp2 = await temp.json();
+      console.log("data  >>>> ", temp2);
+    }, 6000);
+  };
+
+  useEffect(() => {
+    if (!setIntervalRef) {
+      updateSetIntervalRef(pingServerAfter30Sec());
+    }
+
+    return () => {
+      clearInterval(setIntervalRef);
+      updateSetIntervalRef();
+    };
+  }, []);
+
   return (
     <View
       style={{
-        height: 200,
+        height: 400,
         width: 300,
         bgColor: "blue",
         position: "relative",
@@ -66,6 +132,9 @@ const RCE = () => {
         paddingHorizontal: 5,
       }}
       reference={mainDivRef}
+      onClick={(e)=>{
+        e.stopPropagation()
+      }}
     >
       <View
         style={{
@@ -88,7 +157,7 @@ const RCE = () => {
       <View style={{ display: "block", flex: 1 }}>
         {text.map((val, index) => {
           let value = val.data;
-          let tempType = val.type;
+          let tempType = val.types;
           return (
             <div
               style={{
@@ -99,21 +168,21 @@ const RCE = () => {
               }}
               key={index}
             >
-              {(tempType === type[0] ||
-                tempType === type[1] ||
-                tempType === type[2]) && (
+              {(tempType === types[0] ||
+                tempType === types[1] ||
+                tempType === types[2]) && (
                 <View
                   onClick={() => {
-                    let d = text[index]["type"];
+                    let d = text[index]["types"];
                     let check =
-                      d === type[0]
-                        ? type[1]
-                        : d === type[1]
-                        ? type[2]
-                        : type[0];
+                      d === types[0]
+                        ? types[1]
+                        : d === types[1]
+                        ? types[2]
+                        : types[0];
                     let temp = [
                       ...text.slice(0, index),
-                      { type: check, data: text[index]["data"] },
+                      { types: check, data: text[index]["data"] },
                       ...text.slice(index + 1),
                     ];
 
@@ -121,9 +190,9 @@ const RCE = () => {
                   }}
                   style={{ cursor: "pointer", paddingTop: 3, paddingRight: 5 }}
                 >
-                  {tempType === type[0] && <RiCheckboxBlankLine />}
-                  {tempType === type[1] && <RiCheckFill />}
-                  {tempType === type[2] && <RiCheckDoubleFill />}
+                  {tempType === types[0] && <RiCheckboxBlankLine />}
+                  {tempType === types[1] && <RiCheckFill />}
+                  {tempType === types[2] && <RiCheckDoubleFill />}
                 </View>
               )}
               <textarea
@@ -138,13 +207,13 @@ const RCE = () => {
                   resize: "none",
                   overflowY: "hidden",
                   textDecoration:
-                    tempType === type[1] ? "line-through" : "none",
-                  fontWeight: tempType === type[4] ? 800 : 400,
+                    tempType === types[1] ? "line-through" : "none",
+                  fontWeight: tempType === types[4] ? 800 : 400,
                 }}
                 onFocus={() => {
                   updateCursorAtIndex(index);
                 }}
-                type={text}
+                types={text}
                 value={value}
                 ref={cursorAtIndex === index ? reference : void 0}
                 onKeyDown={(e) => {
@@ -152,7 +221,7 @@ const RCE = () => {
                     e.preventDefault();
                     const temp = [
                       ...text.slice(0, index + 1),
-                      { type: type[3], data: "" },
+                      { types: types[3], data: "" },
                       ...text.slice(index + 1),
                     ];
                     updateText(temp);
@@ -187,7 +256,7 @@ const RCE = () => {
                 onChange={(e) => {
                   let temp = [
                     ...text.slice(0, index),
-                    { type: text[index]["type"], data: e.target.value },
+                    { types: text[index]["types"], data: e.target.value },
                     ...text.slice(index + 1),
                   ];
                   updateCursorAtIndex(index);
@@ -223,8 +292,10 @@ const RCE = () => {
               let temp = [
                 ...text.slice(0, cursorAtIndex),
                 {
-                  type:
-                    text[cursorAtIndex]["type"] === type[0] ? type[3] : type[0],
+                  types:
+                    text[cursorAtIndex]["types"] === types[0]
+                      ? types[3]
+                      : types[0],
                   data: text[cursorAtIndex]["data"],
                 },
                 ...text.slice(cursorAtIndex + 1),
@@ -245,7 +316,7 @@ const RCE = () => {
               let temp = [
                 ...text.slice(0, cursorAtIndex),
                 {
-                  type: type[3],
+                  types: types[3],
                   data: text[cursorAtIndex]["data"],
                 },
                 ...text.slice(cursorAtIndex + 1),
@@ -267,7 +338,7 @@ const RCE = () => {
               let temp = [
                 ...text.slice(0, cursorAtIndex),
                 {
-                  type: type[4],
+                  types: types[4],
                   data: text[cursorAtIndex]["data"],
                 },
                 ...text.slice(cursorAtIndex + 1),
@@ -290,8 +361,8 @@ const RCE = () => {
             //   let temp = [
             //     ...text.slice(0, cursorAtIndex),
             //     {
-            //       type:
-            //         text[cursorAtIndex]["type"] === type[0] ? type[3] : type[0],
+            //       types:
+            //         text[cursorAtIndex]["types"] === types[0] ? types[3] : types[0],
             //       data: text[cursorAtIndex]["data"],
             //     },
             //     ...text.slice(cursorAtIndex + 1),
@@ -315,8 +386,8 @@ const RCE = () => {
             //   let temp = [
             //     ...text.slice(0, cursorAtIndex),
             //     {
-            //       type:
-            //         text[cursorAtIndex]["type"] === type[0] ? type[3] : type[0],
+            //       types:
+            //         text[cursorAtIndex]["types"] === types[0] ? types[3] : types[0],
             //       data: text[cursorAtIndex]["data"],
             //     },
             //     ...text.slice(cursorAtIndex + 1),
@@ -353,8 +424,8 @@ const RCE = () => {
             //   let temp = [
             //     ...text.slice(0, cursorAtIndex),
             //     {
-            //       type:
-            //         text[cursorAtIndex]["type"] === type[0] ? type[3] : type[0],
+            //       types:
+            //         text[cursorAtIndex]["types"] === types[0] ? types[3] : types[0],
             //       data: text[cursorAtIndex]["data"],
             //     },
             //     ...text.slice(cursorAtIndex + 1),
@@ -377,8 +448,8 @@ const RCE = () => {
             //   let temp = [
             //     ...text.slice(0, cursorAtIndex),
             //     {
-            //       type:
-            //         text[cursorAtIndex]["type"] === type[0] ? type[3] : type[0],
+            //       types:
+            //         text[cursorAtIndex]["types"] === types[0] ? types[3] : types[0],
             //       data: text[cursorAtIndex]["data"],
             //     },
             //     ...text.slice(cursorAtIndex + 1),
@@ -387,6 +458,10 @@ const RCE = () => {
             //   console.log("text -=-=>", temp);
             //   updateText(temp);
             // }}
+
+            onClick={() => {
+              console.log("chanes", JSON.stringify(text));
+            }}
           >
             <FiDownloadCloud />
           </View>
@@ -397,3 +472,7 @@ const RCE = () => {
 };
 
 export default React.memo(RCE);
+
+{
+  /* <Modal /> */
+}

@@ -249,6 +249,7 @@ const Colors = {
   lightYellow: { light: "#ffeea6", dark: "" },
   green: { light: "#92d192", dark: "" },
   darkBlue: { light: "#2C73D2", dark: "" },
+  darkBlueOpacity2: { light: "#2C73D2CC", dark: "" },
   blue: { light: "#6ab0f3", dark: "" },
   aqua: { light: "#76d4d6", dark: "" },
   purple: { light: "#e1a6f2", dark: "" },
