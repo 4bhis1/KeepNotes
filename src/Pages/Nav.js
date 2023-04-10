@@ -1,9 +1,12 @@
 import React, { useState } from "react";
 import Avatar from "../Components/Avatar";
+import LihtAndDarkModeSwitch from "../Components/Switch";
 import View from "../Components/View";
 
 const Nav = () => {
   let [view, updateView] = useState("row");
+
+  let [darkMode, updateDarkMode] = useState(false);
 
   return (
     <>
@@ -19,8 +22,17 @@ const Nav = () => {
         <View>
           <input type={"text"} placeholder={"enter here to search"} />
         </View>
-        <View style={{ display: "flex", justifyContent: "space-between" }}>
-          <View>Theme Toggler</View>
+        <View
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <LihtAndDarkModeSwitch
+            darkMode={darkMode}
+            updateDarkMode={updateDarkMode}
+          />
           {/* <View
             onClick={() => {
               if (view === "row") updateView("col");
@@ -29,8 +41,12 @@ const Nav = () => {
           >
             List View
           </View> */}
-
-          <Avatar name={"Abhishek Kumar"} />
+          <View style={{ cursor: "pointer", position : "relative"  }} >
+            <Avatar name={"Abhishek Kumar"} />
+            {/* <View style={{position : "Absolute", top : 40, zInde : 2}}>
+              Nice
+            </View> */}
+          </View>
         </View>
       </View>
     </>

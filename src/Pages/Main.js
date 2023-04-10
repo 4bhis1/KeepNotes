@@ -3,55 +3,88 @@ import Cards from "../Components/Cards";
 import Displayer from "../Components/Displayer";
 import Input from "../Components/Input";
 import Modal from "../Components/Modal";
-import RCE from "../Components/ReachCodeEditor";
+import RCE from "./components/ReachCodeEditor";
 import RecordAudio from "../Components/Recorder";
 import View from "../Components/View";
+// import Habits from "./Habits";
 import LeftTaskNav from "./LeftTaskNav";
 import Nav from "./Nav";
 
-let userId = "63ae74ab20820f243525ca23";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link,
+  Navigate,
+} from "react-router-dom";
+import Notes from "./Screen/Notes";
+import Login from "./Screen/SigninLoginPages/Login";
+import Signup from "./Screen/SigninLoginPages/Signup";
+import LeftSectionImage from "./Screen/LeftSectionImage";
+import Forgot from "./Screen/SigninLoginPages/Forgot";
+import OTP from "./Screen/SigninLoginPages/OTP";
+import Habits from "./Screen/Habits/Habits";
 
 const Main = () => {
-  let [pages, updatePages] = useState();
-
-  let [pageId, updatePageId] = useState();
-
-  const dataUpdate = async () => {
-    const temp = await fetch("http://localhost:5010/cn/getAllNotes", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ userId }),
-    });
-
-    const temp2 = await temp.json();
-    console.log("data is here", temp2);
-
-    updatePages(temp2["result"]);
-  };
-
-  useEffect(() => {
-    dataUpdate();
-  }, [pageId]);
+  let login = true;
 
   return (
-    <View>
-      <LeftTaskNav />
-      <View style={{ bgColor: "green", flex: 1, flexDirection: "column" }}>
-        <Nav />
-        <View style={{ flex: 1 }}>
+    // <View>
+    //   <LeftTaskNav />
+    //   <View style={{ bgColor: "green", flex: 1, flexDirection: "column" }}>
+    //     <Nav />
+    //     <View style={{ flex: 1 }}>
+    //       <Habits />
+    //     </View>
+    //   </View>
+    // </View>
 
+    <Router>
+      {!login ? (
+        <View>
+          <LeftSectionImage />
+          <Routes>
+            <Route exact path="/" element={<Navigate to={"/login"} />} />
+            <Route exact path="/login" element={<Login />} />
+            <Route exact path="/signup" element={<Signup />} />
+            <Route exact path="/forgot-password" element={<Forgot />} />
+            <Route exact path="/confirm-otp" element={<OTP />} />
+          </Routes>
         </View>
-      </View>
-    </View>
+      ) : (
+        <View style={{ overflow: "hidden" }}>
+          <LeftTaskNav />
+          <View style={{ bgColor: "green", flex: 1, flexDirection: "column", height: "100vh" }}>
+            <Nav />
+            <View style={{ flex: 1, overflow: "hidden" }}>
+              <Routes>
+                <Route exact path="/" element={<Navigate to={"/notes"} />} />
+                <Route exact path="/notes" element={<Notes />} />
+                <Route exact path="/habits" element={<Habits />} />
+                <Route exact path="/whiteBoard" element={<Habits />} />
+                <Route exact path="/reminders" element={<Habits />} />
+                <Route exact path="/fav" element={<Habits />} />
+                <Route exact path="/trash" element={<Habits />} />
+                <Route exact path="/moneyManage" element={<Habits />} />
+                <Route exact path="/library" element={<Habits />} />
+                {/* <Route exact path="/anime" element={<FisrtScreen />} /> */}
+                {/* 
+                <Route exact path="/movies/:movieId" element={<MovieWatch />} />
+                <Route exact path="/series/:seriesId" element={<Main />} />
+                <Route exact path="/anime/watch" element={<Main />} /> 
+              */}
+              </Routes>
+            </View>
+          </View>
+        </View>
+      )}
+    </Router>
     // <>
     //   {/* <Displayer />
     //   <RecordAudio />
     //   <Nav />
     //   <Input /> */}
-    //   {/* <RCE /> */}
+    //   <RCE />
 
     //   {pageId && (
     //     <Modal

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import View from "./View";
+import View from "../../Components/View";
 
 import { SiAudiomack } from "react-icons/si";
 import { BsListCheck } from "react-icons/bs";
@@ -15,9 +15,9 @@ import {
 import { MdDelete } from "react-icons/md";
 import moment from "moment";
 
-// let pageId = "63ae9bbd38508e1ac5f4211e";
+let pageIdGlobal = "63ae9bbd38508e1ac5f4211e";
 
-const RCE = ({ pageId, pageNote }) => {
+const RCE = ({ pageId = pageIdGlobal, pageNote }) => {
   const types = ["do", "doing", "done", "txt", "bld", "mic", "img"];
 
   const [cursorAtIndex, updateCursorAtIndex] = useState(0);
@@ -26,27 +26,58 @@ const RCE = ({ pageId, pageNote }) => {
   let [todoCompleteWidth, updateTodoCompleteWidth] = useState({
     doing: 0,
     done: 0,
+    count: 0,
   });
+  let [heading, updateHeading] = useState();
 
   const fetchData = async () => {
-    const temp = await fetch("http://localhost:5010/cn/getPage", {
-      method: "POST",
+    const temp = await fetch(`http://localhost:5010/notes/${pageId}`, {
+      method: "GET",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        pageId,
-      }),
     });
     const temp2 = await temp.json();
-    console.log(">>>> temp2", temp2["result"]);
-    updateText(temp2["result"]);
+    console.log(">>>> temp2", temp2);
+    updateHeading(temp2["result"]["heading"]);
+    updateText(temp2["result    return () => "]["note"]);
   };
 
   useEffect(() => {
     fetchData();
-  },[]);
+
+    return async () => {
+      let data;
+      let heading;
+
+      updateHeading((tempdata) => {
+        heading = tempdata;
+        return tempdata;
+      });
+
+      updateText((tempdata) => {
+        data = tempdata;
+        return tempdata;
+      });
+
+      await fetch(`http://localhost:5010/notes/${pageId}`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          note: data,
+          heading,
+          pinned: false,
+          background: "blue",
+        }),
+      });
+
+      clearInterval(setIntervalRef);
+    };
+  }, []);
 
   useEffect(() => {
     reference.current.focus();
@@ -64,8 +95,11 @@ const RCE = ({ pageId, pageNote }) => {
       updateTodoCompleteWidth({
         doing: (doing / (do1 + doing + done)) * width,
         done: (done / (do1 + doing + done)) * width,
+        count: do1 + doing + done,
       });
   }, [cursorAtIndex, text]);
+
+  // console.log(">>> nice", todoCompleteWidth);
 
   let reference = useRef(null);
   let mainDivRef = useRef(null);
@@ -76,209 +110,265 @@ const RCE = ({ pageId, pageNote }) => {
   }, [text]);
 
   let pingServerAfter30Sec = () => {
-    console.log("Ping");
-
     return setInterval(async () => {
       let data;
+      let heading;
+
+      updateHeading((tempdata) => {
+        heading = tempdata;
+        return tempdata;
+      });
 
       updateText((tempdata) => {
         data = tempdata;
         return tempdata;
       });
 
-      const temp = await fetch("http://localhost:5010/cn/notes", {
-        method: "PATCH",
+      await fetch(`http://localhost:5010/notes/${pageId}`, {
+        method: "POST",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          pageId,
           note: data,
-          heading: "Nice todo",
+          heading,
           pinned: false,
           background: "blue",
-          updatedon: moment().format("MM/DD/YYYY HH:mm:ss"),
         }),
       });
-      const temp2 = await temp.json();
-      console.log("data  >>>> ", temp2);
-    }, 6000);
+    }, 600);
   };
 
   useEffect(() => {
     if (!setIntervalRef) {
       updateSetIntervalRef(pingServerAfter30Sec());
     }
-
-    return () => {
-      clearInterval(setIntervalRef);
-      updateSetIntervalRef();
-    };
+    return () => clearInterval(setIntervalRef);
   }, []);
 
   return (
-    <View
-      style={{
-        height: 400,
-        width: 300,
-        bgColor: "blue",
-        position: "relative",
-        flexDirection: "column",
-        display: "flex",
-        borderRadius: 10,
-        overflow: "hidden",
-        paddingTop: 10,
-        paddingHorizontal: 5,
-      }}
-      reference={mainDivRef}
-      onClick={(e)=>{
-        e.stopPropagation()
-      }}
-    >
+    <>
+      {/* Header of do doing done */}
+      {!!todoCompleteWidth.count && (
+        <View
+          style={{
+            // flex: 1,
+            height: 5,
+            // position: "absolute",
+            // top: 0,
+            // left: 0,
+            // right: 0,
+            borderRadius: 10,
+            borderBottomLeftRadius: 0,
+            borderBottomRightRadius: 0,
+            overflow: "hidden",
+          }}
+        >
+          <View
+            style={{ bgColor: "green", width: todoCompleteWidth.done || 0 }}
+          />
+          <View
+            style={{ bgColor: "yellow", width: todoCompleteWidth.doing || 0 }}
+          />
+        </View>
+      )}
+
       <View
         style={{
-          // flex: 1,
-          height: 5,
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
+          height: 400,
+          width: 400,
+          bgColor: "#000000",
+          position: "relative",
+          flexDirection: "column",
+          // display: "flex",
+          overflow: "auto",
+          ...(!todoCompleteWidth.count
+            ? {
+                borderRadius: 10,
+                borderBottomLeftRadius: 0,
+                borderBottomRightRadius: 0,
+              }
+            : {}),
+          // marginTop: 10,
+          // marginHorizontal: 5,
+        }}
+        reference={mainDivRef}
+        onClick={(e) => {
+          e.stopPropagation();
         }}
       >
-        <View
-          style={{ bgColor: "green", width: todoCompleteWidth.done || 0 }}
-        />
-        <View
-          style={{ bgColor: "yellow", width: todoCompleteWidth.doing || 0 }}
-        />
-      </View>
-      {/* <textarea /> */}
-      <View style={{ display: "block", flex: 1 }}>
-        {text.map((val, index) => {
-          let value = val.data;
-          let tempType = val.types;
-          return (
-            <div
+        <View style={{ display: "block", flex: 1, margin: 10 }}>
+          <View>
+            <textarea
               style={{
-                display: "flex",
-                backgroundColor: "lightblue",
-                margin: 0,
-                padding: 0,
+                border: 0,
+                outline: "none",
+                backgroundColor: "black",
+                color: "white",
+                paddingLeft: 5,
+                fontSize: 18,
+                resize: "none",
+                flex: 1,
+                overflowY: "hidden",
+                marginBottom: 10,
+                fontWeight: 600,
+                // height: 20,
               }}
-              key={index}
-            >
-              {(tempType === types[0] ||
-                tempType === types[1] ||
-                tempType === types[2]) && (
-                <View
-                  onClick={() => {
-                    let d = text[index]["types"];
-                    let check =
-                      d === types[0]
-                        ? types[1]
-                        : d === types[1]
-                        ? types[2]
-                        : types[0];
-                    let temp = [
-                      ...text.slice(0, index),
-                      { types: check, data: text[index]["data"] },
-                      ...text.slice(index + 1),
-                    ];
-
-                    updateText(temp);
-                  }}
-                  style={{ cursor: "pointer", paddingTop: 3, paddingRight: 5 }}
-                >
-                  {tempType === types[0] && <RiCheckboxBlankLine />}
-                  {tempType === types[1] && <RiCheckFill />}
-                  {tempType === types[2] && <RiCheckDoubleFill />}
-                </View>
-              )}
-              <textarea
+              placeholder={"Title..."}
+              value={heading}
+              onChange={(e) => {
+                updateHeading(e.target.value);
+              }}
+            />
+          </View>
+          {text.map((val, index) => {
+            let value = val.data;
+            let tempType = val.types;
+            return (
+              <View
                 style={{
-                  border: 0,
-                  outline: "none",
-                  backgroundColor: "lightblue",
-                  flex: 1,
-                  color: "white",
-                  paddingLeft: 5,
-                  fontSize: 16,
-                  resize: "none",
-                  overflowY: "hidden",
-                  textDecoration:
-                    tempType === types[1] ? "line-through" : "none",
-                  fontWeight: tempType === types[4] ? 800 : 400,
+                  // backgroundColor: "lightblue",
+                  margin: 0,
+                  padding: 0,
                 }}
-                onFocus={() => {
-                  updateCursorAtIndex(index);
-                }}
-                types={text}
-                value={value}
-                ref={cursorAtIndex === index ? reference : void 0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    const temp = [
-                      ...text.slice(0, index + 1),
-                      { types: types[3], data: "" },
-                      ...text.slice(index + 1),
-                    ];
-                    updateText(temp);
-                    updateCursorAtIndex(index + 1);
-                  } else if (e.key === "Backspace" && !text[index]["data"]) {
-                    if (value.length < 1 && cursorAtIndex !== 0) {
+                key={index}
+              >
+                {(tempType === types[0] ||
+                  tempType === types[1] ||
+                  tempType === types[2]) && (
+                  <View
+                    onClick={() => {
+                      let d = text[index]["types"];
+                      let check =
+                        d === types[0]
+                          ? types[1]
+                          : d === types[1]
+                          ? types[2]
+                          : types[0];
                       let temp = [
                         ...text.slice(0, index),
+                        { types: check, data: text[index]["data"] },
                         ...text.slice(index + 1),
                       ];
-                      updateCursorAtIndex(index - 1);
+
                       updateText(temp);
+                    }}
+                    style={{
+                      cursor: "pointer",
+                      paddingTop: 3,
+                      paddingRight: 5,
+                    }}
+                  >
+                    {tempType === types[0] && (
+                      <RiCheckboxBlankLine style={{ color: "white" }} />
+                    )}
+                    {tempType === types[1] && (
+                      <RiCheckFill style={{ color: "white" }} />
+                    )}
+                    {tempType === types[2] && (
+                      <RiCheckDoubleFill style={{ color: "white" }} />
+                    )}
+                  </View>
+                )}
+                <textarea
+                  style={{
+                    border: 0,
+                    outline: "none",
+                    backgroundColor: "black",
+                    flex: 1,
+                    color: "white",
+                    paddingLeft: 5,
+                    fontSize: 16,
+                    resize: "none",
+                    overflowY: "hidden",
+                    textDecoration:
+                      tempType === types[1] ? "line-through" : "none",
+                    fontWeight: tempType === types[4] ? 800 : 400,
+                  }}
+                  placeholder={
+                    text.length === 1 ? "Write somwthing here..." : ""
+                  }
+                  onFocus={() => {
+                    updateCursorAtIndex(index);
+                  }}
+                  types={text}
+                  value={value}
+                  ref={cursorAtIndex === index ? reference : void 0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      const temp = [
+                        ...text.slice(0, index + 1),
+                        { types: types[3], data: "" },
+                        ...text.slice(index + 1),
+                      ];
+                      updateText(temp);
+                      updateCursorAtIndex(index + 1);
+                    } else if (e.key === "Backspace" && !text[index]["data"]) {
+                      if (value.length < 1 && cursorAtIndex !== 0) {
+                        let temp = [
+                          ...text.slice(0, index),
+                          ...text.slice(index + 1),
+                        ];
+                        updateCursorAtIndex(index - 1);
+                        updateText(temp);
+                      }
+                    } else if (e.key === "Tab") {
+                      e.preventDefault();
+                      let temp = [
+                        ...text.slice(0, index),
+                        e.target.value.substring(
+                          0,
+                          e.target.selectionStart + 1
+                        ) +
+                          "  " +
+                          e.target.value.substring(e.target.selectionStart + 1),
+                        ...text.slice(index + 1),
+                      ];
+                      updateCursorAtIndex(index);
+                      updateText(temp);
+                    } else if (e.key === "ArrowDown") {
+                      if (index !== text.length - 1)
+                        updateCursorAtIndex(index + 1);
+                    } else if (e.key === "ArrowUp") {
+                      if (index !== 0) updateCursorAtIndex(index - 1);
                     }
-                  } else if (e.key === "Tab") {
-                    e.preventDefault();
+                  }}
+                  onChange={(e) => {
                     let temp = [
                       ...text.slice(0, index),
-                      e.target.value.substring(0, e.target.selectionStart + 1) +
-                        "  " +
-                        e.target.value.substring(e.target.selectionStart + 1),
+                      { types: text[index]["types"], data: e.target.value },
                       ...text.slice(index + 1),
                     ];
                     updateCursorAtIndex(index);
                     updateText(temp);
-                  } else if (e.key === "ArrowDown") {
-                    if (index !== text.length - 1)
-                      updateCursorAtIndex(index + 1);
-                  } else if (e.key === "ArrowUp") {
-                    if (index !== 0) updateCursorAtIndex(index - 1);
-                  }
-                }}
-                onChange={(e) => {
-                  let temp = [
-                    ...text.slice(0, index),
-                    { types: text[index]["types"], data: e.target.value },
-                    ...text.slice(index + 1),
-                  ];
-                  updateCursorAtIndex(index);
-                  updateText(temp);
-                }}
-              />
-            </div>
-          );
-        })}
+                  }}
+                />
+              </View>
+            );
+          })}
+        </View>
+
+        {/* Actions for RCE starts here */}
       </View>
 
-      {/* Actions for RCE starts here */}
+      {/* actions starts here */}
       <View
         style={{
           // position: "absolute",
-          bgColor: "lightWhite",
+          bgColor: "lightBlack",
           // bottom: 0,
           // left: 0,
           // right: 0,
           // flex: 1,
           justifyContent: "space-between",
           paddingHorizontal: 10,
+          borderBottomLeftRadius: 10,
+          borderBottomRightRadius: 10,
+        }}
+        onClick={(e) => {
+          e.stopPropagation();
         }}
       >
         <View>
@@ -289,6 +379,7 @@ const RCE = ({ pageId, pageNote }) => {
               paddingLeft: 0,
             }}
             onClick={() => {
+              console.log("Text 98 1", text);
               let temp = [
                 ...text.slice(0, cursorAtIndex),
                 {
@@ -300,6 +391,10 @@ const RCE = ({ pageId, pageNote }) => {
                 },
                 ...text.slice(cursorAtIndex + 1),
               ];
+              console.log(
+                "\n@@@ 98  file: ReachCodeEditor.js:390  temp:",
+                temp
+              );
 
               updateText(temp);
             }}
@@ -467,7 +562,7 @@ const RCE = ({ pageId, pageNote }) => {
           </View>
         </View>
       </View>
-    </View>
+    </>
   );
 };
 

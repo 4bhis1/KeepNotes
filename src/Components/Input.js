@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import RCE from "./ReachCodeEditor";
+import RCE from "../Pages/components/ReachCodeEditor";
 import { BsCheck2Square } from "react-icons/bs";
 
 const Input = ({ data }) => {
